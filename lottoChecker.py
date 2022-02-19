@@ -9,7 +9,7 @@ def main():
     updater = Updater(token=key.token, use_context=True)
     dispatcher = updater.dispatcher
 
-    # 입력받은 메시지 유형이 text 인 경우, echo 함수 실행
+    # 입력받은 메시지 유형이 text(message) 인 경우, echo 함수 실행
     echo_handler = MessageHandler(Filters.text, func.echo)
     dispatcher.add_handler(echo_handler)
 
