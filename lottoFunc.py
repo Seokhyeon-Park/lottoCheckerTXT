@@ -1,6 +1,8 @@
 import re
 import json
 import requests
+import time
+import math
 import telegram as tel
 import key
 
@@ -42,25 +44,43 @@ def saveLotto(chatId, userMessage):
 
 # lotto 번호 가져오기
 def getLottoNum():
-    # 회차
-    drwNo = 1003
-    # 로또 번호 가져오기
-    url = "https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=" + str(drwNo)
+    # [토요일 20시 45분 기준]
+    # 1회 : 1039261500
+    # 일주일 : 604800
+    # 1003회 : 1645271100
+    # time.localtime()
+    week = 604800
+    first = 1039261500
+    date = (time.time() + week - first) / 604800
+    print(time.localtime(time.time()))
 
-    # post : 로또번호
-    jsonText = requests.post(url).text
-    json = json.loads(jsonText)
-    # 로또 번호 저장
-    lottoNum = []
+    now = math.trunc(date)
 
-    # 숫자만 저장
-    for data in json:
-        if data.find('No') != -1 and len(str(json[data])) < 3:
-            lottoNum.append(json[data])
+    # 토요일 20시 45분이 되면...
+    if now != int(open("itsme.txt", "r").readline()):
+        # 갱신
+        open("itsme.txt", "w").close()
+        f = open("itsme.txt", "a")
+        f.write(str(now))
+        f.close()
 
-    # 로또번호
-    print(lottoNum)
+        # 로또번호 조회 url
+        url = "https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=" + str(now)
 
+        # 로또번호 요청
+        jsonText = requests.post(url).text
+        json = json.loads(jsonText)
+        lottoNum = []
+
+        # 번호만 추출
+        for data in json:
+            if data.find('No') != -1 and len(str(json[data])) < 3:
+                lottoNum.append(json[data])
+
+        # 로또번호
+        # [번호 맞추고 보내주기]
+        # [안 보내졌을 떄와 번호 못불러 왔을 떄 예외처리]
+        print(lottoNum)
 
 # custom log
 def customLog(logName, log):
