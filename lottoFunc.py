@@ -1,6 +1,6 @@
 import re
-import string
-from tokenize import String
+import json
+import requests
 import telegram as tel
 import key
 
@@ -39,6 +39,28 @@ def saveLotto(chatId, userMessage):
         bot.sendMessage(chat_id=chatId, text=text)
         customLog("Error", "userMessage is Null")
         customLog("USER ID(Error)", chatId)
+
+# lotto 번호 가져오기
+def getLottoNum():
+    # 회차
+    drwNo = 1003
+    # 로또 번호 가져오기
+    url = "https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=" + str(drwNo)
+
+    # post : 로또번호
+    jsonText = requests.post(url).text
+    json = json.loads(jsonText)
+    # 로또 번호 저장
+    lottoNum = []
+
+    # 숫자만 저장
+    for data in json:
+        if data.find('No') != -1 and len(str(json[data])) < 3:
+            lottoNum.append(json[data])
+
+    # 로또번호
+    print(lottoNum)
+
 
 # custom log
 def customLog(logName, log):
