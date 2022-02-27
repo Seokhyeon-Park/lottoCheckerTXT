@@ -1,5 +1,9 @@
-import lottoFunc as func
+#-*- coding: utf-8 -*-
+
 import key
+import time
+import threading
+import lottoFunc as func
 from telegram.ext import Updater, MessageHandler, Filters
 
 # https://t.me/lottochecker_bot
@@ -16,6 +20,11 @@ def main():
     # polling (handler/dispatcher loop)
     updater.start_polling()
     updater.idle()
+
+    # Threading
+    # t = threading.Thread(target=func, args=(1,))
+    # t.start()
+
 
 if __name__ == "__main__":
     main()

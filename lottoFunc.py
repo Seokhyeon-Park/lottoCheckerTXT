@@ -1,10 +1,14 @@
+#-*- coding: utf-8 -*-
+
+from distutils import filelist
 import re
+import os
+import key
 import json
-import requests
 import time
 import math
+import requests
 import telegram as tel
-import key
 
 # bot 생성
 bot = tel.Bot(token=key.token)
@@ -36,6 +40,10 @@ def saveLotto(chatId, userMessage):
                     f = open("data/"+str(chatId)+".txt", "a")
                     f.write(lottoNumber+"\n")
                     f.close()
+        #############
+        #### 임시 ####
+        #############
+        getLottoNum()
     else:
         text = "메시지를 다시 확인해주세요."
         bot.sendMessage(chat_id=chatId, text=text)
@@ -52,9 +60,10 @@ def getLottoNum():
     week = 604800
     first = 1039261500
     date = (time.time() + week - first) / 604800
-    print(time.localtime(time.time()))
+    customLog("now (full)", time.localtime(time.time()))
 
     now = math.trunc(date)
+    customLog("now", now)
 
     # 토요일 20시 45분이 되면...
     if now != int(open("itsme.txt", "r").readline()):
@@ -69,18 +78,36 @@ def getLottoNum():
 
         # 로또번호 요청
         jsonText = requests.post(url).text
-        json = json.loads(jsonText)
+        jsonConv = json.loads(jsonText)
         lottoNum = []
 
         # 번호만 추출
-        for data in json:
-            if data.find('No') != -1 and len(str(json[data])) < 3:
-                lottoNum.append(json[data])
+        for data in jsonConv:
+            if data.find('No') != -1 and len(str(jsonConv[data])) < 3:
+                lottoNum.append(jsonConv[data])
 
         # 로또번호
         # [번호 맞추고 보내주기]
         # [안 보내졌을 떄와 번호 못불러 왔을 떄 예외처리]
-        print(lottoNum)
+        matchNumber(lottoNum)
+
+# lotto번호 메칭
+def matchNumber(lottoNum):
+    userData = getUserData()
+
+def getUserData():
+    fileList = os.listdir("./data")
+    for fileNm in fileList:
+        if fileNm != ".DS_Store":
+            customLog("fileNm : ", fileNm)
+            f = open("./data/"+fileNm, 'r')
+            while True:
+                line = f.readline()
+                if not line: break
+                print(line[:-1])
+            f.close()
+
+
 
 # custom log
 def customLog(logName, log):
