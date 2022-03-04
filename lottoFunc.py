@@ -1,6 +1,5 @@
 #-*- coding: utf-8 -*-
 
-from distutils import filelist
 import re
 import os
 import key
@@ -28,14 +27,14 @@ def echo(update, cb):
 def saveLotto(chatId, userMessage):
     if (userMessage):
         open("data/"+str(chatId)+".txt", "w").close()
-        customLog("USER ID", chatId)
-        customLog("userMessage", userMessage)
+        custLog("USER ID", chatId)
+        custLog("userMessage", userMessage)
         # 로또 번호 추출
         for line in userMessage.splitlines():
             for chk in lottoLine:
                 if line.find(chk) != -1:
                     lottoNumber = re.sub('[^0-9]', '', line)
-                    customLog("lottoNumber", lottoNumber)
+                    custLog("lottoNumber", lottoNumber)
                     # 파일 저장
                     f = open("data/"+str(chatId)+".txt", "a")
                     f.write(lottoNumber+"\n")
@@ -47,8 +46,8 @@ def saveLotto(chatId, userMessage):
     else:
         text = "메시지를 다시 확인해주세요."
         bot.sendMessage(chat_id=chatId, text=text)
-        customLog("Error", "userMessage is Null")
-        customLog("USER ID(Error)", chatId)
+        custLog("Error", "userMessage is Null")
+        custLog("USER ID(Error)", chatId)
 
 # lotto 번호 가져오기
 def getLottoNum():
@@ -60,10 +59,10 @@ def getLottoNum():
     week = 604800
     first = 1039261500
     date = (time.time() + week - first) / 604800
-    customLog("now (full)", time.localtime(time.time()))
+    custLog("now (full)", time.localtime(time.time()))
 
     now = math.trunc(date)
-    customLog("now", now)
+    custLog("now", now)
 
     # 토요일 20시 45분이 되면...
     if now != int(open("itsme.txt", "r").readline()):
@@ -81,36 +80,49 @@ def getLottoNum():
         jsonConv = json.loads(jsonText)
         lottoNum = []
 
+        custLog("jsonConv", jsonConv)
+
         # 번호만 추출
         for data in jsonConv:
+            custLog("data", data)
+            # if(data == 'bnusNo'): lottoNum.append('*'+jsonConv[data])
             if data.find('No') != -1 and len(str(jsonConv[data])) < 3:
                 lottoNum.append(jsonConv[data])
 
         # 로또번호
         # [번호 맞추고 보내주기]
         # [안 보내졌을 떄와 번호 못불러 왔을 떄 예외처리]
+        custLog("lottoNumSplit", lottoNum)
         matchNumber(lottoNum)
 
 # lotto번호 메칭
 def matchNumber(lottoNum):
     userData = getUserData()
+    custLog("UserData", userData)
+    
 
+
+# 유저 계정 정보, 유저 로또 번호 가져오기
 def getUserData():
+    userData = []
     fileList = os.listdir("./data")
+    # 유저 계정, 로또 번호 불러오기
     for fileNm in fileList:
         if fileNm != ".DS_Store":
-            customLog("fileNm : ", fileNm)
+            custLog("fileNm", fileNm)
+            userData.append(fileNm)
             f = open("./data/"+fileNm, 'r')
             while True:
                 line = f.readline()
                 if not line: break
-                print(line[:-1])
+                custLog("lottoNum",line[:-1])
+                userData.append(line[:-1])
             f.close()
-
-
+    # 유저 정보 return
+    return userData
 
 # custom log
-def customLog(logName, log):
+def custLog(logName, log):
     if (logFlag):
         print("::::::::::::::::::::")
         print(logName, " : ", log)
