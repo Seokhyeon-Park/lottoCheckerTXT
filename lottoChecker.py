@@ -9,7 +9,8 @@ from telegram.ext import Updater, MessageHandler, Filters
 
 def main():
     # 로또 당첨시간 대기(loop)
-    func.getLottoNum()
+    # 1분마다 시간 확인
+    func.getLottoNumber()
 
     # updater : , dispatcher : 
     updater = Updater(token=key.token, use_context=True)
@@ -22,14 +23,6 @@ def main():
     # polling (handler/dispatcher loop)
     updater.start_polling()
     updater.idle()
-
-    # Threading
-    # while(True):
-    #     time.sleep(5)
-    #     func.getLottoNum()
-    # threading.Timer(5, func.getLottoNum).start()
-    
-
 
 if __name__ == "__main__":
     main()
