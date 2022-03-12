@@ -2,13 +2,15 @@
 
 import key
 import time
-import threading
 import lottoFunc as func
 from telegram.ext import Updater, MessageHandler, Filters
 
 # https://t.me/lottochecker_bot
 
 def main():
+    # 로또 당첨시간 대기(loop)
+    func.getLottoNum()
+
     # updater : , dispatcher : 
     updater = Updater(token=key.token, use_context=True)
     dispatcher = updater.dispatcher
@@ -22,8 +24,11 @@ def main():
     updater.idle()
 
     # Threading
-    # t = threading.Thread(target=func, args=(1,))
-    # t.start()
+    # while(True):
+    #     time.sleep(5)
+    #     func.getLottoNum()
+    # threading.Timer(5, func.getLottoNum).start()
+    
 
 
 if __name__ == "__main__":

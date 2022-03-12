@@ -1,5 +1,6 @@
 #-*- coding: utf-8 -*-
 
+from ast import Not
 import re
 import os
 import key
@@ -7,6 +8,7 @@ import json
 import time
 import math
 import requests
+import threading
 import telegram as tel
 
 # bot 생성
@@ -34,7 +36,7 @@ def saveLotto(chatId, userMessage):
             for chk in lottoLine:
                 if line.find(chk) != -1:
                     lottoNumber = re.sub('[^0-9]', '', line)
-                    custLog("lottoNumber", lottoNumber)
+                    # custLog("lottoNumber", lottoNumber)
                     # 파일 저장
                     f = open("data/"+str(chatId)+".txt", "a")
                     f.write(lottoNumber+"\n")
@@ -42,7 +44,7 @@ def saveLotto(chatId, userMessage):
         #############
         #### 임시 ####
         #############
-        getLottoNum()
+        # getLottoNum()
     else:
         text = "메시지를 다시 확인해주세요."
         bot.sendMessage(chat_id=chatId, text=text)
@@ -50,21 +52,24 @@ def saveLotto(chatId, userMessage):
         custLog("USER ID(Error)", chatId)
 
 # lotto 번호 가져오기
+# *loop 필요
 def getLottoNum():
-    # [토요일 20시 45분 기준]
+    # [토요일 20시 45분 기준] -> 21시로 변경
     # 1회 : 1039261500
     # 일주일 : 604800
     # 1003회 : 1645271100
     # time.localtime()
     week = 604800
-    first = 1039261500
+    # first = 1039261500
+    first = 1039262400
     date = (time.time() + week - first) / 604800
+    custLog("first", time.localtime(first))
     custLog("now (full)", time.localtime(time.time()))
 
     now = math.trunc(date)
     custLog("now", now)
 
-    # 토요일 20시 45분이 되면...
+    # 토요일 20시 45분이 되면... -> 9시로 변경
     if now != int(open("itsme.txt", "r").readline()):
         # 갱신
         open("itsme.txt", "w").close()
@@ -78,28 +83,96 @@ def getLottoNum():
         # 로또번호 요청
         jsonText = requests.post(url).text
         jsonConv = json.loads(jsonText)
-        lottoNum = []
+        lottoNum = {'drwtNo' : [], 'bnusNo' : []}
 
         custLog("jsonConv", jsonConv)
 
         # 번호만 추출
         for data in jsonConv:
-            custLog("data", data)
-            # if(data == 'bnusNo'): lottoNum.append('*'+jsonConv[data])
-            if data.find('No') != -1 and len(str(jsonConv[data])) < 3:
-                lottoNum.append(jsonConv[data])
+            if(data == 'bnusNo'):
+                lottoNum['bnusNo'].append(jsonConv[data])
+            elif data.find('drwtNo') != -1:
+                lottoNum['drwtNo'].append(jsonConv[data])
 
-        # 로또번호
-        # [번호 맞추고 보내주기]
-        # [안 보내졌을 떄와 번호 못불러 왔을 떄 예외처리]
-        custLog("lottoNumSplit", lottoNum)
-        matchNumber(lottoNum)
+        # 유저에게 당첨여부 전달
+        sendResultToUser(lottoNum)
 
-# lotto번호 메칭
-def matchNumber(lottoNum):
+    threading.Timer(60, getLottoNum).start()
+
+# 유저에게 당첨여부 전달
+def sendResultToUser(lottoNum):
+    userId = ''
     userData = getUserData()
+    custLog("lottoNum", lottoNum)
     custLog("UserData", userData)
-    
+
+    # 번호확인
+    for data in userData:
+        if data.find('.txt') != -1:
+            userId = data
+        else:
+            result = matchLottoNum(data, lottoNum)
+            bot.sendMessage(chat_id=userId, text=result)
+
+def matchLottoNum(data, lottoNum):
+    count = 0
+    bCount = 0
+    resultTxt = ''
+    userLottoNum = data
+    userNum = []
+    result = ''
+    bResult = ''
+
+    # 유저 로또번호 번호 분리
+    for depth in range(1, 7):
+        comp = 12 - (depth)
+        if(len(userLottoNum) == (comp)):
+            custLog("comp", comp)
+            # 1. depth 수 만큼 앞자리 한자리 자르기
+            for d in range(depth):
+                userNum.append(int(userLottoNum[d:d+1]))
+            # 2. 나머지 연산 (두자리 자르기)
+            for c in range(int(comp/2)):
+                if userLottoNum[depth+(c*2):depth+((c+1)*2)] != '':
+                    userNum.append(int(userLottoNum[depth+(c*2):depth+((c+1)*2)]))
+    # 유저 로또 번호
+    custLog("userNum", userNum)
+    for uNum in userNum:
+        chk = 0
+        for lNum in lottoNum['drwtNo']:
+            if uNum == lNum:
+                result = result + ' [' + str(uNum) + '] '
+                count += 1
+                chk = 1
+            elif uNum == lottoNum['bnusNo'][0]:
+                result = result + ' (' + str(uNum) + ') '
+                bCount += 1
+                chk = 1
+        if chk == 0:
+            result = result + ' ' + str(uNum) + ' '
+
+    if count == 3:
+        resultTxt = '5등'
+    elif count == 4:
+        resultTxt = '4등'
+    elif count == 5 and bCount == 0:
+        resultTxt = '3등'
+    elif count == 5 and bCount == 1:
+        resultTxt = '2등'
+    elif count == 6:
+        resultTxt = '1등'
+    else:
+        resultTxt = '꽝'
+
+    # if bCount == 0:
+    #     bResult = 'X'
+    # else:
+    #     bResult = 'O'
+
+    # result = result + '\n- ' + str(count) + '개 번호 일치\n- 보너스 일치 여부 : ' + bResult + '\n- 결과 : ' + resultTxt
+
+    result = result + '\n- 당첨 여부 : ' + resultTxt
+    return result
 
 
 # 유저 계정 정보, 유저 로또 번호 가져오기
@@ -115,7 +188,7 @@ def getUserData():
             while True:
                 line = f.readline()
                 if not line: break
-                custLog("lottoNum",line[:-1])
+                # custLog("lottoNum",line[:-1])
                 userData.append(line[:-1])
             f.close()
     # 유저 정보 return
