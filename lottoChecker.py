@@ -1,7 +1,6 @@
 #-*- coding: utf-8 -*-
 
 import key
-import time
 import lottoFunc as func
 from telegram.ext import Updater, MessageHandler, Filters
 

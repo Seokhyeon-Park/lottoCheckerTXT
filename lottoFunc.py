@@ -1,6 +1,5 @@
 #-*- coding: utf-8 -*-
 
-from ast import Not
 import re
 import os
 import key
