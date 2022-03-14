@@ -14,6 +14,7 @@ import telegram as tel
 bot = tel.Bot(token=key.token)
 lottoLine = ["A", "B", "C", "D", "E"]
 logFlag = True
+testFlag = True
 
 # message 가져오기
 def echo(update, cb):
@@ -24,7 +25,7 @@ def echo(update, cb):
     # lotto 번호 분리
     saveLotto(chatId, userMessage)
 
-# lotto 번호 분리
+# lotto 번호 분리 및 유저 정보 저장
 def saveLotto(chatId, userMessage):
     # 메세지를 수신한 경우
     if(userMessage):
@@ -80,7 +81,7 @@ def getLottoNumber():
         jsonConv = json.loads(jsonText)
         lottoNumber = {'drwtNo' : [], 'bnusNo' : []}
 
-        custLog("jsonConv", jsonConv)
+        # custLog("jsonConv", jsonConv)
 
         # 번호만 추출
         for data in jsonConv:
@@ -98,19 +99,25 @@ def getLottoNumber():
 def sendResultToUser(lottoNumber):
     userId = ''
     userData = getUserData()
-    custLog("lottoNumber", lottoNumber)
-    custLog("UserData", userData)
+    # custLog("lottoNumber", lottoNumber)
+    custLog("*UserData", userData)
 
     # 번호확인
     for data in userData:
         if data.find('.txt') != -1:
             userId = data
+            custLog("userId", userId)
         else:
-            result = matchLottoNumber(data, lottoNumber)
-            bot.sendMessage(chat_id=userId, text=result)
+            if len(data) != 0:
+                result = matchLottoNumber(data, lottoNumber)
+            # custLog("result", result)
+            # 당첨 여부 통보
+            if (testFlag == False):
+                bot.sendMessage(chat_id=userId, text=result)
     # 유저 데이터 삭제
     deleteUserData()
 
+# 당첨여부 확인
 def matchLottoNumber(data, lottoNumber):
     count = 0
     bCount = 0
@@ -121,10 +128,10 @@ def matchLottoNumber(data, lottoNumber):
     # bResult = ''
 
     # 유저 로또번호 번호 분리
-    for depth in range(1, 7):
+    for depth in range(0, 7):
         comp = 12 - (depth)
         if(len(userLottoNum) == (comp)):
-            custLog("comp", comp)
+            # custLog("comp", comp)
             # 1. depth 수 만큼 앞자리 한자리 자르기
             for d in range(depth):
                 userNumber.append(int(userLottoNum[d:d+1]))
@@ -132,6 +139,7 @@ def matchLottoNumber(data, lottoNumber):
             for c in range(int(comp/2)):
                 if userLottoNum[depth+(c*2):depth+((c+1)*2)] != '':
                     userNumber.append(int(userLottoNum[depth+(c*2):depth+((c+1)*2)]))
+
     # 유저 로또 번호
     custLog("userNumber", userNumber)
     for uNum in userNumber:
