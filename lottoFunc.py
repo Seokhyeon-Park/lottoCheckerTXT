@@ -100,13 +100,13 @@ def sendResultToUser(lottoNumber):
     userId = ''
     userData = getUserData()
     # custLog("lottoNumber", lottoNumber)
-    custLog("*UserData", userData)
+    # custLog("*UserData", userData)
 
     # 번호확인
     for data in userData:
         if data.find('.txt') != -1:
             userId = data
-            custLog("userId", userId)
+            # custLog("userId", userId)
         else:
             if len(data) != 0:
                 result = matchLottoNumber(data, lottoNumber)
@@ -141,7 +141,7 @@ def matchLottoNumber(data, lottoNumber):
                     userNumber.append(int(userLottoNum[depth+(c*2):depth+((c+1)*2)]))
 
     # 유저 로또 번호
-    custLog("userNumber", userNumber)
+    # custLog("userNumber", userNumber)
     for uNum in userNumber:
         chk = 0
         for lNum in lottoNumber['drwtNo']:
@@ -187,7 +187,7 @@ def getUserData():
     # 유저 계정, 로또 번호 불러오기
     for fileNm in fileList:
         if fileNm != ".DS_Store":
-            custLog("fileNm", fileNm)
+            # custLog("fileNm", fileNm)
             userData.append(fileNm)
             f = open("./data/"+fileNm, 'r')
             while True:
