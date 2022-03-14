@@ -4,3 +4,5 @@ test.py
 .DS_Store
 itsme.txt
 pytest.py
+__pycache__/key.cpython-39.pyc
+__pycache__/lottoFunc.cpython-39.pyc

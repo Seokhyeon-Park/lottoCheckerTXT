@@ -108,6 +108,8 @@ def sendResultToUser(lottoNumber):
         else:
             result = matchLottoNumber(data, lottoNumber)
             bot.sendMessage(chat_id=userId, text=result)
+    # 유저 데이터 삭제
+    deleteUserData()
 
 def matchLottoNumber(data, lottoNumber):
     count = 0
@@ -188,6 +190,13 @@ def getUserData():
             f.close()
     # 유저 정보 return
     return userData
+
+# 유저 계정 정보, 유저 로또 번호 삭제
+def deleteUserData():
+    fileList = os.listdir("./data")
+    for fileNm in fileList:
+        if fileNm != ".DS_Store":
+            os.remove("./data/"+fileNm)
 
 # custom log
 def custLog(logName, log):
