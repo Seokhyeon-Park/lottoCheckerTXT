@@ -27,6 +27,7 @@ def echo(update, cb):
 
 # lotto 번호 분리 및 유저 정보 저장
 def saveLotto(chatId, userMessage):
+    check = []
     # 메세지를 수신한 경우
     if(userMessage):
         open("data/"+str(chatId)+".txt", "w").close()
@@ -37,10 +38,15 @@ def saveLotto(chatId, userMessage):
             for chk in lottoLine:
                 if line.find(chk) != -1:
                     userNumber = re.sub('[^0-9]', '', line)
-                    # 파일 저장
-                    f = open("data/"+str(chatId)+".txt", "a")
-                    f.write(userNumber+"\n")
-                    f.close()
+                    if len(userNumber) != 0:
+                        # 파일 저장
+                        check.append(userNumber)
+        check = set(check)
+        check = list(check)
+        for number in check:
+            f = open("data/"+str(chatId)+".txt", "a")
+            f.write(number+"\n")
+            f.close()
     else:
         text = "메시지를 다시 확인해주세요."
         bot.sendMessage(chat_id=chatId, text=text)
