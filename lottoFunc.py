@@ -14,7 +14,7 @@ import telegram as tel
 bot = tel.Bot(token=key.token)
 lottoLine = ["A", "B", "C", "D", "E"]
 logFlag = True
-testFlag = True
+testFlag = False
 
 # message 가져오기
 def echo(update, cb):
@@ -59,7 +59,6 @@ def getLottoNumber():
     week = 604800
     first = 1039262400
     date = (time.time() + week - first) / 604800
-    # custLog("first", time.localtime(first))
     # custLog("now (full)", time.localtime(time.time()))
 
     now = math.trunc(date)
@@ -67,6 +66,7 @@ def getLottoNumber():
 
     # 토요일 20시 45분이 되면... -> 9시로 변경
     if now != int(open("itsme.txt", "r").readline()):
+        print("21:00!!")
         # 갱신
         open("itsme.txt", "w").close()
         f = open("itsme.txt", "a")
@@ -110,10 +110,11 @@ def sendResultToUser(lottoNumber):
         else:
             if len(data) != 0:
                 result = matchLottoNumber(data, lottoNumber)
-            # custLog("result", result)
-            # 당첨 여부 통보
-            if (testFlag == False):
-                bot.sendMessage(chat_id=userId, text=result)
+                # 당첨 여부 통보
+                if (testFlag == False):
+                    custLog("userId", userId);
+                    custLog("result", result);
+                    bot.sendMessage(chat_id=userId, text=result)
     # 유저 데이터 삭제
     deleteUserData()
 
@@ -141,7 +142,7 @@ def matchLottoNumber(data, lottoNumber):
                     userNumber.append(int(userLottoNum[depth+(c*2):depth+((c+1)*2)]))
 
     # 유저 로또 번호
-    # custLog("userNumber", userNumber)
+    custLog("userNumber", userNumber)
     for uNum in userNumber:
         chk = 0
         for lNum in lottoNumber['drwtNo']:
